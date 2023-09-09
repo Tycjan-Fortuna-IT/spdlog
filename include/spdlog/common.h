@@ -328,8 +328,6 @@ constexpr std::basic_string_view<T> to_string_view(std::basic_format_string<T, A
 }
 #endif
 
-// make_unique support for pre c++14
-
 
 // to avoid useless casts (see https://github.com/nlohmann/json/issues/2893#issuecomment-889152324)
 template<typename T, typename U, std::enable_if_t<!std::is_same<T, U>::value, int> = 0>
