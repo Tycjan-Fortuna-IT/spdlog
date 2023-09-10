@@ -114,6 +114,9 @@ using format_string_t = std::format_string<Args...>;
 using format_string_t = std::string_view;
 #    endif
 
+using wstring_view_t = std::wstring_view;
+using wmemory_buf_t = std::wstring;
+
 template<class T, class Char = char>
 struct is_convertible_to_basic_format_string : std::integral_constant<bool, std::is_convertible<T, std::basic_string_view<Char>>::value>
 {};
