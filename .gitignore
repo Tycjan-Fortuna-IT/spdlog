@@ -93,3 +93,7 @@ cmake-build-*/
 # macos
 *.DS_store
 *.xcodeproj/
+
+#other
+bin
+bin-int
