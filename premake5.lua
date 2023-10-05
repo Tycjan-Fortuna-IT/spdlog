@@ -33,6 +33,10 @@ project "spdlog"
         runtime "Debug"
         symbols "on"
 
+    filter "system:linux"
+		pic "On"
+		systemversion "latest"
+
     filter "configurations:Release"
         defines "RELEASE"
         runtime "Release"
