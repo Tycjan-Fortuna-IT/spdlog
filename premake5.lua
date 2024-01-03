@@ -4,8 +4,6 @@ project "spdlog"
     cppdialect "C++20"
     staticruntime "off"
     
-    outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
