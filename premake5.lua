@@ -9,19 +9,17 @@ project "spdlog"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-    defines 
-    {
-        "SPDLOG_COMPILED_LIB"
+    defines {
+        "SPDLOG_COMPILED_LIB",
+        "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
     }
     
-    files
-    {
+    files {
         "include/spdlog/**.h",
         "src/**.cpp"
     }
     
-    includedirs
-    {
+    includedirs {
         "include"
     }
     
