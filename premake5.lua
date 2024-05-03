@@ -9,6 +9,7 @@ project "spdlog"
 
     defines {
         "SPDLOG_COMPILED_LIB",
+        "SPDLOG_USE_STD_FORMAT",
         "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
     }
     

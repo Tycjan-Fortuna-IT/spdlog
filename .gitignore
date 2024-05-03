@@ -96,3 +96,5 @@ cmake-build-*/
 /.vs
 /out/build
 /CMakeSettings.json
+spdlog.lib.recipe
+spdlog.vcxproj.FileListAbsolute.txt
