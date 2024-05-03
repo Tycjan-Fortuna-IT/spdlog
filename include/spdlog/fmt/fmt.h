@@ -9,6 +9,7 @@
 // Include a bundled header-only copy of fmtlib or an external one.
 // By default spdlog include its own copy.
 //
+#include <spdlog/tweakme.h>
 
 #if defined(SPDLOG_USE_STD_FORMAT)  // SPDLOG_USE_STD_FORMAT is defined - use std::format
     #include <format>
@@ -19,10 +20,6 @@
     #ifndef FMT_USE_WINDOWS_H
         #define FMT_USE_WINDOWS_H 0
     #endif
-    // enable the 'n' flag in for backward compatibility with fmt 6.x
-    #define FMT_DEPRECATED_N_SPECIFIER
-    // enable ostream formatting for backward compatibility with fmt 8.x
-    #define FMT_DEPRECATED_OSTREAM
 
     #include <spdlog/fmt/bundled/core.h>
     #include <spdlog/fmt/bundled/format.h>

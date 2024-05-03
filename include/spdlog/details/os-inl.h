@@ -177,12 +177,12 @@ SPDLOG_INLINE int rename(const filename_t &filename1, const filename_t &filename
 // Return true if path exists (file or directory)
 SPDLOG_INLINE bool path_exists(const filename_t &filename) SPDLOG_NOEXCEPT {
 #ifdef _WIN32
+    struct _stat buffer;
     #ifdef SPDLOG_WCHAR_FILENAMES
-    auto attribs = ::GetFileAttributesW(filename.c_str());
+    return (::_wstat(filename.c_str(), &buffer) == 0);
     #else
-    auto attribs = ::GetFileAttributesA(filename.c_str());
+    return (::_stat(filename.c_str(), &buffer) == 0);
     #endif
-    return attribs != INVALID_FILE_ATTRIBUTES;
 #else  // common linux/unix all have the stat system call
     struct stat buffer;
     return (::stat(filename.c_str(), &buffer) == 0);
@@ -332,15 +332,21 @@ SPDLOG_INLINE size_t _thread_id() SPDLOG_NOEXCEPT {
     return static_cast<size_t>(::thr_self());
 #elif __APPLE__
     uint64_t tid;
-    // There is no pthread_threadid_np prior to 10.6, and it is not supported on any PPC,
+    // There is no pthread_threadid_np prior to Mac OS X 10.6, and it is not supported on any PPC,
     // including 10.6.8 Rosetta. __POWERPC__ is Apple-specific define encompassing ppc and ppc64.
-    #if (MAC_OS_X_VERSION_MAX_ALLOWED < 1060) || defined(__POWERPC__)
-    tid = pthread_mach_thread_np(pthread_self());
-    #elif MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-    if (&pthread_threadid_np) {
-        pthread_threadid_np(nullptr, &tid);
-    } else {
+    #ifdef MAC_OS_X_VERSION_MAX_ALLOWED
+    {
+        #if (MAC_OS_X_VERSION_MAX_ALLOWED < 1060) || defined(__POWERPC__)
         tid = pthread_mach_thread_np(pthread_self());
+        #elif MAC_OS_X_VERSION_MIN_REQUIRED < 1060
+        if (&pthread_threadid_np) {
+            pthread_threadid_np(nullptr, &tid);
+        } else {
+            tid = pthread_mach_thread_np(pthread_self());
+        }
+        #else
+        pthread_threadid_np(nullptr, &tid);
+        #endif
     }
     #else
     pthread_threadid_np(nullptr, &tid);
@@ -433,7 +439,7 @@ SPDLOG_INLINE bool in_terminal(FILE *file) SPDLOG_NOEXCEPT {
 
 #if (defined(SPDLOG_WCHAR_TO_UTF8_SUPPORT) || defined(SPDLOG_WCHAR_FILENAMES)) && defined(_WIN32)
 SPDLOG_INLINE void wstr_to_utf8buf(wstring_view_t wstr, memory_buf_t &target) {
-    if (wstr.size() > static_cast<size_t>((std::numeric_limits<int>::max)()) / 2 - 1) {
+    if (wstr.size() > static_cast<size_t>((std::numeric_limits<int>::max)()) / 4 - 1) {
         throw_spdlog_ex("UTF-16 string is too big to be converted to UTF-8");
     }
 
@@ -444,7 +450,7 @@ SPDLOG_INLINE void wstr_to_utf8buf(wstring_view_t wstr, memory_buf_t &target) {
     }
 
     int result_size = static_cast<int>(target.capacity());
-    if ((wstr_size + 1) * 2 > result_size) {
+    if ((wstr_size + 1) * 4 > result_size) {
         result_size =
             ::WideCharToMultiByte(CP_UTF8, 0, wstr.data(), wstr_size, NULL, 0, NULL, NULL);
     }
@@ -528,6 +534,15 @@ SPDLOG_INLINE bool create_dir(const filename_t &path) {
         }
 
         auto subdir = path.substr(0, token_pos);
+#ifdef _WIN32
+        // if subdir is just a drive letter, add a slash e.g. "c:"=>"c:\",
+        // otherwise path_exists(subdir) returns false (issue #3079)
+        const bool is_drive = subdir.length() == 2 && subdir[1] == ':';
+        if (is_drive) {
+            subdir += '\\';
+            token_pos++;
+        }
+#endif
 
         if (!subdir.empty() && !path_exists(subdir) && !mkdir_(subdir)) {
             return false;  // return error if failed creating dir

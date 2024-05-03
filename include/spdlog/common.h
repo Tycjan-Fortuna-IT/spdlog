@@ -65,12 +65,21 @@
 #if defined(_MSC_VER) && (_MSC_VER < 1900)
     #define SPDLOG_NOEXCEPT _NOEXCEPT
     #define SPDLOG_CONSTEXPR
-    #define SPDLOG_CONSTEXPR_FUNC inline
 #else
     #define SPDLOG_NOEXCEPT noexcept
     #define SPDLOG_CONSTEXPR constexpr
-    #if __cplusplus >= 201402L
-        #define SPDLOG_CONSTEXPR_FUNC constexpr
+#endif
+
+// If building with std::format, can just use constexpr, otherwise if building with fmt
+// SPDLOG_CONSTEXPR_FUNC needs to be set the same as FMT_CONSTEXPR to avoid situations where
+// a constexpr function in spdlog could end up calling a non-constexpr function in fmt
+// depending on the compiler
+// If fmt determines it can't use constexpr, we should inline the function instead
+#ifdef SPDLOG_USE_STD_FORMAT
+    #define SPDLOG_CONSTEXPR_FUNC constexpr
+#else  // Being built with fmt
+    #if FMT_USE_CONSTEXPR
+        #define SPDLOG_CONSTEXPR_FUNC FMT_CONSTEXPR
     #else
         #define SPDLOG_CONSTEXPR_FUNC inline
     #endif
@@ -310,7 +319,7 @@ struct source_loc {
           line{line_in},
           funcname{funcname_in} {}
 
-    SPDLOG_CONSTEXPR bool empty() const SPDLOG_NOEXCEPT { return line == 0; }
+    SPDLOG_CONSTEXPR bool empty() const SPDLOG_NOEXCEPT { return line <= 0; }
     const char *filename{nullptr};
     int line{0};
     const char *funcname{nullptr};
