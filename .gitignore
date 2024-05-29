@@ -16,6 +16,7 @@ build/*
 *.ipdb
 *.opensdf
 *.sdf
+*.d
 
 # Compiled Dynamic libraries
 *.so
