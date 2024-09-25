@@ -34,7 +34,7 @@ elseif(NOT CMAKE_CXX_STANDARD)
 endif()
 
 # make sure __cplusplus is defined when using msvc and enable parallel build
-if(MSVC)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     string(APPEND CMAKE_CXX_FLAGS " /Zc:__cplusplus /MP")
 endif()
 
@@ -108,9 +108,11 @@ endif()
 if(WIN32)
     option(SPDLOG_WCHAR_SUPPORT "Support wchar api" OFF)
     option(SPDLOG_WCHAR_FILENAMES "Support wchar filenames" OFF)
+    option(SPDLOG_WCHAR_CONSOLE "Support wchar output to console" OFF)
 else()
     set(SPDLOG_WCHAR_SUPPORT OFF CACHE BOOL "non supported option" FORCE)
     set(SPDLOG_WCHAR_FILENAMES OFF CACHE BOOL "non supported option" FORCE)
+    set(SPDLOG_WCHAR_CONSOLE OFF CACHE BOOL "non supported option" FORCE)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -159,7 +161,7 @@ if(SPDLOG_BUILD_SHARED OR BUILD_SHARED_LIBS)
     endif()
     add_library(spdlog SHARED ${SPDLOG_SRCS} ${SPDLOG_ALL_HEADERS})
     target_compile_definitions(spdlog PUBLIC SPDLOG_SHARED_LIB)
-    if(MSVC)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         target_compile_options(spdlog PUBLIC $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<COMPILE_LANGUAGE:CUDA>>>:/wd4251
                                              /wd4275>)
     endif()
@@ -213,7 +215,7 @@ if(SPDLOG_FMT_EXTERNAL OR SPDLOG_FMT_EXTERNAL_HO)
     target_compile_definitions(spdlog PUBLIC SPDLOG_FMT_EXTERNAL)
     target_compile_definitions(spdlog_header_only INTERFACE SPDLOG_FMT_EXTERNAL)
 
-    # use external fmt-header-nly
+    # use external fmt-header-only
     if(SPDLOG_FMT_EXTERNAL_HO)
         target_link_libraries(spdlog PUBLIC fmt::fmt-header-only)
         target_link_libraries(spdlog_header_only INTERFACE fmt::fmt-header-only)
@@ -237,9 +239,11 @@ endif()
 # Misc definitions according to tweak options
 # ---------------------------------------------------------------------------------------
 set(SPDLOG_WCHAR_TO_UTF8_SUPPORT ${SPDLOG_WCHAR_SUPPORT})
+set(SPDLOG_UTF8_TO_WCHAR_CONSOLE ${SPDLOG_WCHAR_CONSOLE})
 foreach(
     SPDLOG_OPTION
     SPDLOG_WCHAR_TO_UTF8_SUPPORT
+    SPDLOG_UTF8_TO_WCHAR_CONSOLE
     SPDLOG_WCHAR_FILENAMES
     SPDLOG_NO_EXCEPTIONS
     SPDLOG_CLOCK_COARSE
