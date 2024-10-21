@@ -23,15 +23,15 @@ project "spdlog"
     
     filter "system:windows"
         systemversion "latest"
-        
-        filter "configurations:Debug"
-        defines "DEBUG"
-        runtime "Debug"
-        symbols "on"
 
     filter "system:linux"
 		pic "On"
 		systemversion "latest"
+
+    filter "configurations:Debug"
+        defines "DEBUG"
+        runtime "Debug"
+        symbols "on"
 
     filter "configurations:Release"
         defines "RELEASE"
